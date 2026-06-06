@@ -1,0 +1,82 @@
+/**
+ * SILC Fake Order Generator - Admin Styles
+ */
+.silc-fog-progress-bar {
+	background: #e0e0e0;
+	border-radius: 4px;
+	height: 28px;
+	margin: 12px 0;
+	overflow: hidden;
+	position: relative;
+	width: 100%;
+}
+
+.silc-fog-progress-bar-fill {
+	background: #2271b1;
+	border-radius: 4px;
+	height: 100%;
+	transition: width 0.4s ease;
+	width: 0%;
+}
+
+#silc-fog-progress-wrap {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	margin-top: 20px;
+	padding: 16px 20px;
+}
+
+#silc-fog-progress-wrap h2 {
+	margin-top: 0;
+}
+
+#silc-fog-progress-text {
+	font-weight: 600;
+}
+
+#silc-fog-progress-status {
+	color: #50575e;
+}
+
+#silc-fog-log {
+	background: #f6f7f7;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	font-family: Consolas, Monaco, monospace;
+	font-size: 12px;
+	line-height: 1.6;
+	margin-top: 12px;
+	max-height: 300px;
+	overflow-y: auto;
+	padding: 8px 12px;
+}
+
+#silc-fog-log .log-entry {
+	border-bottom: 1px solid #eee;
+	padding: 2px 0;
+}
+
+#silc-fog-log .log-entry:last-child {
+	border-bottom: none;
+}
+
+#silc-fog-log .log-error {
+	color: #d63638;
+}
+
+#silc-fog-log .log-success {
+	color: #00a32a;
+}
+
+#silc-fog-log .log-info {
+	color: #50575e;
+}
+
+#silc-fog-cancel {
+	margin-top: 8px;
+}
+
+.silc-fog-form-table th {
+	width: 200px;
+}
