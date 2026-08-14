@@ -1,0 +1,16 @@
+# Dependencies
+vendor/
+node_modules/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.sublime-*
+
+# Logs
+*.log
+
+# Local build artifacts
+composer.lock
+*.zip

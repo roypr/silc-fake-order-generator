@@ -1,0 +1,15 @@
+{
+	"name": "silc/silc-fake-order-generator",
+	"description": "Generate fake WooCommerce orders for testing and development.",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"require": {
+		"php": ">=7.4"
+	},
+	"config": {
+		"platform": {
+			"php": "7.4"
+		},
+		"allow-plugins": false
+	}
+}
