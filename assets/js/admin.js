@@ -86,6 +86,12 @@
 				paymentMethods.push($(this).val());
 			});
 
+			// Collect selected order statuses.
+			var statuses = [];
+			$('input[name="fog_statuses[]"]:checked').each(function () {
+				statuses.push($(this).val());
+			});
+
 			// Store params.
 			this.params = {
 				start_date: startDate,
@@ -94,7 +100,8 @@
 				min_items: minItems,
 				max_items: maxItems,
 				shipping_methods: shippingMethods,
-				payment_methods: paymentMethods
+				payment_methods: paymentMethods,
+				statuses: statuses
 			};
 
 			this.totalOrders = numOrders;
@@ -148,7 +155,8 @@
 				min_items: this.params.min_items,
 				max_items: this.params.max_items,
 				shipping_methods: this.params.shipping_methods,
-				payment_methods: this.params.payment_methods
+				payment_methods: this.params.payment_methods,
+				statuses: this.params.statuses
 			};
 
 			$.post(silc_fog_data.ajax_url, data, function (response) {

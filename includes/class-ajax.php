@@ -70,8 +70,8 @@ class SILC_FOG_Ajax {
 			'max_items'         => absint( $_POST['max_items'] ?? 3 ),
 			'shipping_methods'  => isset( $_POST['shipping_methods'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['shipping_methods'] ) ) : array(),
 			'payment_methods'   => isset( $_POST['payment_methods'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['payment_methods'] ) ) : array(),
+			'statuses'          => isset( $_POST['statuses'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['statuses'] ) ) : array(),
 		);
-		// phpcs:enable
 
 		// Validation.
 		if ( empty( $params['start_date'] ) || empty( $params['end_date'] ) ) {
@@ -88,6 +88,11 @@ class SILC_FOG_Ajax {
 
 		$min_items = max( 1, min( $params['min_items'], 5 ) );
 		$max_items = max( $min_items, min( $params['max_items'], 5 ) );
+
+		$statuses = array_values( array_intersect( SILC_FOG_Plugin::get_supported_statuses(), $params['statuses'] ) );
+		if ( empty( $statuses ) ) {
+			$statuses = SILC_FOG_Plugin::get_supported_statuses();
+		}
 
 		// Calculate how many orders to create in this batch.
 		$remaining  = $params['num_orders'] - ( $params['batch_index'] * self::BATCH_SIZE );
@@ -129,7 +134,8 @@ class SILC_FOG_Ajax {
 				$min_items,
 				$max_items,
 				$params['shipping_methods'],
-				$params['payment_methods']
+				$params['payment_methods'],
+				$statuses
 			);
 
 			if ( is_wp_error( $result ) ) {
@@ -168,6 +174,7 @@ class SILC_FOG_Ajax {
 	 * @param int    $max_items         Maximum items per order.
 	 * @param array  $shipping_methods  Selected shipping method rate IDs.
 	 * @param array  $payment_methods   Selected payment gateway IDs.
+	 * @param array  $statuses          Unprefixed statuses allowed for randomization.
 	 *
 	 * @return WC_Order|WP_Error
 	 */
@@ -180,7 +187,8 @@ class SILC_FOG_Ajax {
 		int $min_items,
 		int $max_items,
 		array $shipping_methods,
-		array $payment_methods
+		array $payment_methods,
+		array $statuses
 	) {
 		try {
 			// 1. Pick a random customer.
@@ -197,8 +205,22 @@ class SILC_FOG_Ajax {
 			$order_date = $this->random_date( $start_date, $end_date );
 			$order->set_date_created( $order_date );
 
-			// 4. Set order status to pending.
+			// 4. New orders start as pending. The randomized target status is
+			// applied after items/totals are saved so WooCommerce's normal
+			// status-transition pipeline runs exactly like a real order.
+			$target_status = $statuses[ array_rand( $statuses ) ];
 			$order->set_status( 'pending' );
+
+			// 4b. WooCommerce Analytics filters reports by date_paid (and
+			// date_completed) by default. Backdate those properties for statuses
+			// that imply payment so generated orders fall inside the requested
+			// date range in wc_order_stats.
+			if ( in_array( $target_status, array( 'processing', 'completed', 'refunded' ), true ) ) {
+				$order->set_date_paid( $order_date );
+			}
+			if ( 'completed' === $target_status ) {
+				$order->set_date_completed( $order_date );
+			}
 
 			// 5. Add random items.
 			$num_items = wp_rand( $min_items, $max_items );
@@ -241,7 +263,7 @@ class SILC_FOG_Ajax {
 				'state'      => $customer->get_billing_state() ?: '',
 				'postcode'   => $customer->get_billing_postcode() ?: $this->random_postcode(),
 				'country'    => $customer->get_billing_country() ?: 'US',
-				'email'      => $customer->get_billing_email() ?: $customer->get_user_email(),
+				'email'      => $customer->get_billing_email() ?: $customer->get_email(),
 				'phone'      => $customer->get_billing_phone() ?: '',
 			);
 
@@ -293,13 +315,74 @@ class SILC_FOG_Ajax {
 			// 10. Calculate totals.
 			$order->calculate_totals( false ); // false = no taxes for simplicity.
 
-			// 11. Save the order.
+			// 11. Save the order before transitioning status.
 			$order->save();
+
+			// 12. Apply the randomized status through WC's status pipeline.
+			$this->apply_order_status( $order, $target_status );
+
+			// 13. Push the order into the WooCommerce Analytics lookup tables
+			// immediately. The async pipeline can miss generated orders (e.g. when
+			// the target status equals the initial status and update_status()
+			// short-circuits without firing woocommerce_update_order), so sync
+			// explicitly to guarantee the order is reflected in order_stats.
+			$this->sync_order_analytics( $order->get_id() );
 
 			return $order;
 
 		} catch ( Exception $e ) {
 			return new WP_Error( 'order_generation_failed', $e->getMessage() );
+		}
+	}
+
+	/**
+	 * Apply a generated order's final status through WooCommerce's normal
+	 * status-transition pipeline.
+	 *
+	 * Calling update_status() (rather than set_status()/save()) ensures other
+	 * plugins, emails, stock adjustments, and WooCommerce reporting see the
+	 * same hooks they would for a real order status change.
+	 *
+	 * @param WC_Order $order  Generated order.
+	 * @param string   $status Unprefixed target status slug.
+	 *
+	 * @return void
+	 */
+	private function apply_order_status( WC_Order $order, string $status ): void {
+		$order->update_status(
+			$status,
+			__( 'Order status set by SILC Fake Order Generator.', 'silc-fake-order-generator' ),
+			false
+		);
+	}
+
+	/**
+	 * Synchronize an order into the WooCommerce Analytics lookup tables
+	 * (wc_order_stats and friends).
+	 *
+	 * WooCommerce normally does this asynchronously via Action Scheduler, but
+	 * generated orders can miss that pipeline (e.g. when the target status
+	 * equals the initial status and update_status() short-circuits without
+	 * firing woocommerce_update_order). Syncing here guarantees the order is
+	 * reflected in Analytics immediately.
+	 *
+	 * @param int $order_id Order ID.
+	 * @return void
+	 */
+	private function sync_order_analytics( int $order_id ): void {
+		$scheduler = '\Automattic\WooCommerce\Internal\Admin\Schedulers\OrdersScheduler';
+
+		// WooCommerce >= 10.5 exposes a public single-order import entry point
+		// that updates every lookup table and invalidates the reports cache.
+		if ( class_exists( $scheduler ) && method_exists( $scheduler, 'import' ) ) {
+			$scheduler::import( $order_id );
+			return;
+		}
+
+		// Fallback for older WooCommerce Admin: sync the order stats directly.
+		$stats_store = '\Automattic\WooCommerce\Admin\API\Reports\Orders\Stats\DataStore';
+		if ( class_exists( $stats_store ) && method_exists( $stats_store, 'sync_order' ) ) {
+			$stats_store::sync_order( $order_id );
 		}
 	}
 
@@ -414,7 +497,7 @@ class SILC_FOG_Ajax {
 			return null;
 		}
 
-		$chosen = $candidates[ array_rand( $candidates ) ];
+		$chosen  = $candidates[ array_rand( $candidates ) ];
 		$product = wc_get_product( $chosen['id'] );
 
 		return $product ? $product : null;
@@ -429,15 +512,23 @@ class SILC_FOG_Ajax {
 	 * @return string Date string compatible with strtotime.
 	 */
 	private function random_date( string $start_date, string $end_date ): string {
-		$start_ts = strtotime( $start_date );
-		$end_ts   = strtotime( $end_date );
+		// Interpret the user-supplied dates in the site's timezone so the
+		// generated order dates stay within the selected local date range.
+		$start    = wc_string_to_datetime( $start_date );
+		$end      = wc_string_to_datetime( $end_date );
+		$start_ts = $start->getTimestamp();
+		$end_ts   = $end->getTimestamp();
 
 		if ( $start_ts >= $end_ts ) {
 			return $start_date;
 		}
 
 		$random_ts = wp_rand( $start_ts, $end_ts );
-		return gmdate( 'Y-m-d H:i:s', $random_ts );
+
+		// Format in the site's timezone: set_date_created() parses plain date
+		// strings as site-local time, so gmdate() here would shift orders to a
+		// different day on non-UTC sites.
+		return wp_date( 'Y-m-d H:i:s', $random_ts );
 	}
 
 	/**

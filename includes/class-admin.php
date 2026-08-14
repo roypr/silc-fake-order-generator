@@ -106,6 +106,7 @@ class SILC_FOG_Admin {
 
 		$shipping_methods = $this->get_shipping_methods();
 		$payment_gateways = $this->get_payment_gateways();
+		$order_statuses   = $this->get_order_statuses();
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'SILC Fake Order Generator', 'silc-fake-order-generator' ); ?></h1>
@@ -203,6 +204,25 @@ class SILC_FOG_Admin {
 								</fieldset>
 							</td>
 						</tr>
+
+						<!-- Order Statuses -->
+						<tr>
+							<th scope="row">
+								<?php esc_html_e( 'Order Statuses', 'silc-fake-order-generator' ); ?>
+							</th>
+							<td>
+								<fieldset>
+									<legend class="screen-reader-text"><?php esc_html_e( 'Order Statuses', 'silc-fake-order-generator' ); ?></legend>
+									<?php foreach ( $order_statuses as $status_slug => $status_label ) : ?>
+										<label>
+											<input type="checkbox" name="fog_statuses[]" value="<?php echo esc_attr( $status_slug ); ?>" checked />
+											<?php echo esc_html( $status_label ); ?>
+										</label><br />
+									<?php endforeach; ?>
+									<p class="description"><?php esc_html_e( 'Each generated order will be randomly assigned one of the selected statuses using WooCommerce order status transitions.', 'silc-fake-order-generator' ); ?></p>
+								</fieldset>
+							</td>
+						</tr>
 					</tbody>
 				</table>
 
@@ -233,6 +253,25 @@ class SILC_FOG_Admin {
 			</div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Get order statuses available for randomization.
+	 *
+	 * @return array<string, string> Status slug => Label.
+	 */
+	private function get_order_statuses(): array {
+		$statuses = array();
+
+		foreach ( SILC_FOG_Plugin::get_supported_statuses() as $status ) {
+			if ( function_exists( 'wc_get_order_status_name' ) ) {
+				$statuses[ $status ] = wc_get_order_status_name( $status );
+			} else {
+				$statuses[ $status ] = ucfirst( $status );
+			}
+		}
+
+		return $statuses;
 	}
 
 	/**
