@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SILC Fake Order Generator — Realistic WooCommerce Test Orders</title>
+  <meta name="description" content="Generate realistic fake WooCommerce orders for testing — random customers, products, dates, statuses, shipping, payment methods, and coupons, in batches with a live progress bar. Free, open source." />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+
+  <!-- ============ YOUR HEADER (menu) GOES HERE ============ -->
+
+  <main>
+    <!-- ===== Hero ===== -->
+    <section class="relative overflow-hidden bg-slate-900 text-white">
+      <div class="absolute inset-0 bg-gradient-to-br from-indigo-600/30 via-slate-900 to-slate-900"></div>
+      <div class="relative mx-auto max-w-6xl px-6 py-24 text-center">
+        <span class="inline-flex items-center gap-2 rounded-full border border-indigo-400/40 bg-indigo-500/10 px-4 py-1.5 text-xs font-medium tracking-wide text-indigo-200">
+          Free · Open Source · WooCommerce 8.0+
+        </span>
+        <h1 class="mx-auto mt-6 max-w-3xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
+          Fill your store with realistic WooCommerce test orders — in minutes
+        </h1>
+        <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-300">
+          SILC Fake Order Generator creates believable dummy orders with random customers,
+          products, dates, statuses, shipping methods, payment gateways, and coupons — built through
+          WooCommerce's own APIs, so they behave like real orders everywhere.
+        </p>
+        <div class="mt-10">
+          <!-- Replace href="#" with your plugin ZIP download URL -->
+          <a href="#" class="inline-flex items-center gap-2 rounded-lg bg-indigo-500 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:bg-indigo-400">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0l-4-4m4 4l4-4" />
+            </svg>
+            Download v1.1.0
+          </a>
+          <p class="mt-4 text-sm text-slate-400">GPL v2 · Runs entirely on your server · No third-party services</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Stats strip ===== -->
+    <section class="border-b border-slate-200 bg-white">
+      <div class="mx-auto grid max-w-6xl grid-cols-2 gap-6 px-6 py-10 text-center sm:grid-cols-4">
+        <div>
+          <p class="text-3xl font-bold text-slate-900">10,000</p>
+          <p class="mt-1 text-sm text-slate-500">orders per run</p>
+        </div>
+        <div>
+          <p class="text-3xl font-bold text-slate-900">5</p>
+          <p class="mt-1 text-sm text-slate-500">orders per AJAX batch — no timeouts</p>
+        </div>
+        <div>
+          <p class="text-3xl font-bold text-slate-900">7</p>
+          <p class="mt-1 text-sm text-slate-500">order statuses supported</p>
+        </div>
+        <div>
+          <p class="text-3xl font-bold text-slate-900">0</p>
+          <p class="mt-1 text-sm text-slate-500">manual data entry required</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Features ===== -->
+    <section class="mx-auto max-w-6xl px-6 py-20">
+      <h2 class="text-center text-3xl font-bold tracking-tight text-slate-900">Why SILC Fake Order Generator?</h2>
+      <p class="mx-auto mt-4 max-w-2xl text-center text-slate-600">
+        Test reports, dashboards, emails, and shipping workflows without manually creating
+        dozens of orders — and without touching your real data or checkout flow.
+      </p>
+      <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="text-2xl">🧪</div>
+          <h3 class="mt-3 font-semibold text-slate-900">Realistic random data</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-600">
+            Random customers, simple products and variations, quantities, addresses,
+            shipping rates from real zones, active payment gateways, and coupons — with believable fallbacks.
+          </p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="text-2xl">⚡</div>
+          <h3 class="mt-3 font-semibold text-slate-900">Batch generation with progress bar</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-600">
+            Orders are generated in AJAX batches of 5 with a live progress bar, per-batch log,
+            and cancel button — large runs never hit PHP timeouts or memory limits.
+          </p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="text-2xl">📊</div>
+          <h3 class="mt-3 font-semibold text-slate-900">Analytics-ready</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-600">
+            Orders sync into the WooCommerce Analytics lookup tables, with <code class="text-xs">date_paid</code> /
+            <code class="text-xs">date_completed</code> backdated — so revenue reports reflect your chosen date range.
+          </p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="text-2xl">🔄</div>
+          <h3 class="mt-3 font-semibold text-slate-900">Real status pipeline</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-600">
+            Statuses are applied via <code class="text-xs">WC_Order::update_status()</code>, firing the same hooks
+            as a real order — emails, stock, and other plugins see exactly what they expect.
+          </p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="text-2xl">🗓️</div>
+          <h3 class="mt-3 font-semibold text-slate-900">Date-range control</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-600">
+            Pick start and end dates; order dates are randomized inside that range, interpreted
+            in your site's timezone.
+          </p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="text-2xl">🔒</div>
+          <h3 class="mt-3 font-semibold text-slate-900">Secure by design</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-600">
+            Nonce-verified AJAX endpoint, <code class="text-xs">manage_woocommerce</code> capability required,
+            sanitized inputs — and no third-party services.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== How it works ===== -->
+    <section class="border-y border-slate-200 bg-white">
+      <div class="mx-auto max-w-6xl px-6 py-20">
+        <h2 class="text-center text-3xl font-bold tracking-tight text-slate-900">Get started in three steps</h2>
+        <div class="mt-12 grid gap-8 md:grid-cols-3">
+          <div class="text-center">
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-lg font-bold text-indigo-600">1</div>
+            <h3 class="mt-4 font-semibold text-slate-900">Install &amp; activate</h3>
+            <p class="mt-2 text-sm leading-relaxed text-slate-600">
+              Requires WordPress 6.0+, WooCommerce 8.0+, and PHP 7.4+. Just make sure the store has
+              at least one customer and one published product.
+            </p>
+          </div>
+          <div class="text-center">
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-lg font-bold text-indigo-600">2</div>
+            <h3 class="mt-4 font-semibold text-slate-900">Configure</h3>
+            <p class="mt-2 text-sm leading-relaxed text-slate-600">
+              Go to <strong>WooCommerce → Fake Orders</strong>. Choose your date range, number of orders,
+              items per order (1–5), shipping, payment, coupons, and statuses.
+            </p>
+          </div>
+          <div class="text-center">
+            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-lg font-bold text-indigo-600">3</div>
+            <h3 class="mt-4 font-semibold text-slate-900">Generate</h3>
+            <p class="mt-2 text-sm leading-relaxed text-slate-600">
+              Click <strong>Generate Orders</strong> and watch the progress bar. Up to 10,000 orders per run —
+              cancel anytime.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Final CTA ===== -->
+    <section class="bg-slate-900 text-white">
+      <div class="mx-auto max-w-3xl px-6 py-20 text-center">
+        <h2 class="text-3xl font-bold tracking-tight">Ready to test like a real store?</h2>
+        <p class="mt-4 text-slate-300">
+          Download SILC Fake Order Generator and have a store full of realistic test data in minutes.
+        </p>
+        <div class="mt-8">
+          <!-- Replace href="#" with your plugin ZIP download URL -->
+          <a href="#" class="inline-flex items-center gap-2 rounded-lg bg-indigo-500 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:bg-indigo-400">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m0 0l-4-4m4 4l4-4" />
+            </svg>
+            Download v1.1.0
+          </a>
+          <p class="mt-4 text-sm text-slate-400">Free · GPL v2 · Built by SILC · WooCommerce 8.0+ / PHP 7.4+</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ YOUR FOOTER GOES HERE ============ -->
+
+</body>
+</html>

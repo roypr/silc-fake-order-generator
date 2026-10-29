@@ -86,6 +86,12 @@
 				paymentMethods.push($(this).val());
 			});
 
+			// Collect selected coupons.
+			var coupons = [];
+			$('input[name="fog_coupons[]"]:checked').each(function () {
+				coupons.push($(this).val());
+			});
+
 			// Collect selected order statuses.
 			var statuses = [];
 			$('input[name="fog_statuses[]"]:checked').each(function () {
@@ -101,6 +107,7 @@
 				max_items: maxItems,
 				shipping_methods: shippingMethods,
 				payment_methods: paymentMethods,
+				coupons: coupons,
 				statuses: statuses
 			};
 
@@ -156,6 +163,7 @@
 				max_items: this.params.max_items,
 				shipping_methods: this.params.shipping_methods,
 				payment_methods: this.params.payment_methods,
+				coupons: this.params.coupons,
 				statuses: this.params.statuses
 			};
 

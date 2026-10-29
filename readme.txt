@@ -6,11 +6,11 @@ Tested up to: 7.0.2
 Requires PHP: 7.4
 WC requires at least: 8.0
 WC tested up to: 10.9.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Generate realistic fake WooCommerce orders for testing — random customers, products, dates, statuses, shipping, and payment methods, in batches with a live progress bar.
+Generate realistic fake WooCommerce orders for testing — random customers, products, dates, statuses, shipping, payment methods, and coupons, in batches with a live progress bar.
 
 == Description ==
 
@@ -27,6 +27,7 @@ Orders are generated in AJAX batches of 5, so large runs (up to 10,000 orders) n
 * **Dates** — random order dates within your chosen range, interpreted in the site's timezone
 * **Statuses** — pending, processing, on-hold, completed, cancelled, refunded, failed, applied through WooCommerce's normal status-transition pipeline
 * **Shipping & payment** — random rates from your real shipping zones and active payment gateways
+* **Coupons** — a random coupon from your published coupons is applied to each order; coupons that don't meet their conditions are skipped silently
 * **Addresses** — billing/shipping from customer data with believable random fallbacks
 
 = Analytics-Ready =
@@ -49,7 +50,7 @@ Orders are created with `wc_create_order()`, populated with `WC_Order` methods, 
 1. Upload the `silc-fake-order-generator` folder to `/wp-content/plugins/`, or install the plugin ZIP via **Plugins → Add New → Upload Plugin**.
 2. Activate the plugin through the **Plugins** menu in WordPress.
 3. Navigate to **WooCommerce → Fake Orders**.
-4. Choose your start/end dates, number of orders, items per order, shipping methods, payment methods, and order statuses.
+4. Choose your start/end dates, number of orders, items per order, shipping methods, payment methods, coupons, and order statuses.
 5. Click **Generate Orders** and watch the progress bar.
 
 **Prerequisites:** the store needs at least one customer and at least one published product (simple or variable). The generator shows a friendly notice if either is missing.
@@ -80,12 +81,20 @@ Totals are calculated without taxes for simplicity (`calculate_totals( false )`)
 
 Yes. The status checkboxes let you restrict generation to any subset of pending, processing, on-hold, completed, cancelled, refunded, and failed. Each order is randomly assigned one of the selected statuses.
 
+= How do coupons work? =
+
+Published coupons are listed as checkboxes on the generator page. Each generated order gets one randomly chosen coupon applied before totals are calculated. Because a generated order may not satisfy a coupon's own conditions (minimum/maximum spend, usage limits, product or category restrictions, expiry, and so on), coupons that fail are skipped silently and the order is still created.
+
 == Screenshots ==
 
-1. Generator form — dates, order count, items per order, shipping, payment, and status options.
+1. Generator form — dates, order count, items per order, shipping, payment, coupon, and status options.
 2. Generation in progress — progress bar, live log, and cancel button.
 
 == Changelog ==
+
+= 1.1.0 =
+* New: coupons — published coupons are listed as selectable checkboxes on the generator page, and one random coupon is applied to each generated order before totals are calculated
+* Coupons that fail their own conditions (minimum/maximum spend, usage limits, product/category restrictions, expiry, etc.) are skipped silently, so order generation is never interrupted
 
 = 1.0.0 =
 * Initial release
@@ -100,6 +109,9 @@ Yes. The status checkboxes let you restrict generation to any subset of pending,
 * Nonce-verified AJAX endpoint requiring `manage_woocommerce` capability
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+Adds coupon support: select coupons to apply at random during generation. Existing settings and previously generated orders are unaffected — nothing to migrate.
 
 = 1.0.0 =
 Initial release. No upgrade path required — nothing to migrate.

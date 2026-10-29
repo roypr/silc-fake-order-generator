@@ -70,6 +70,7 @@ class SILC_FOG_Ajax {
 			'max_items'         => absint( $_POST['max_items'] ?? 3 ),
 			'shipping_methods'  => isset( $_POST['shipping_methods'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['shipping_methods'] ) ) : array(),
 			'payment_methods'   => isset( $_POST['payment_methods'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['payment_methods'] ) ) : array(),
+			'coupons'           => isset( $_POST['coupons'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['coupons'] ) ) : array(),
 			'statuses'          => isset( $_POST['statuses'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['statuses'] ) ) : array(),
 		);
 
@@ -135,6 +136,7 @@ class SILC_FOG_Ajax {
 				$max_items,
 				$params['shipping_methods'],
 				$params['payment_methods'],
+				$params['coupons'],
 				$statuses
 			);
 
@@ -174,6 +176,7 @@ class SILC_FOG_Ajax {
 	 * @param int    $max_items         Maximum items per order.
 	 * @param array  $shipping_methods  Selected shipping method rate IDs.
 	 * @param array  $payment_methods   Selected payment gateway IDs.
+	 * @param array  $coupons           Selected coupon codes to apply at random.
 	 * @param array  $statuses          Unprefixed statuses allowed for randomization.
 	 *
 	 * @return WC_Order|WP_Error
@@ -188,6 +191,7 @@ class SILC_FOG_Ajax {
 		int $max_items,
 		array $shipping_methods,
 		array $payment_methods,
+		array $coupons,
 		array $statuses
 	) {
 		try {
@@ -312,16 +316,33 @@ class SILC_FOG_Ajax {
 				}
 			}
 
-			// 10. Calculate totals.
+			// 10. Apply a randomly chosen coupon. Coupons carry arbitrary
+			// conditions (minimum/maximum spend, usage limits, product or
+			// category restrictions, expiry, ...) that a generated order may
+			// not satisfy, so any failure is ignored and the order is still
+			// created. apply_coupon() returns a WP_Error on failure; the
+			// try/catch additionally covers third-party validation hooks that
+			// may throw.
+			if ( ! empty( $coupons ) ) {
+				$coupon_code = $coupons[ array_rand( $coupons ) ];
+
+				try {
+					$order->apply_coupon( $coupon_code );
+				} catch ( Exception $e ) {
+					// Silently skip coupons that fail their conditions.
+				}
+			}
+
+			// 11. Calculate totals.
 			$order->calculate_totals( false ); // false = no taxes for simplicity.
 
-			// 11. Save the order before transitioning status.
+			// 12. Save the order before transitioning status.
 			$order->save();
 
-			// 12. Apply the randomized status through WC's status pipeline.
+			// 13. Apply the randomized status through WC's status pipeline.
 			$this->apply_order_status( $order, $target_status );
 
-			// 13. Push the order into the WooCommerce Analytics lookup tables
+			// 14. Push the order into the WooCommerce Analytics lookup tables
 			// immediately. The async pipeline can miss generated orders (e.g. when
 			// the target status equals the initial status and update_status()
 			// short-circuits without firing woocommerce_update_order), so sync

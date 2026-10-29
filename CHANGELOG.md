@@ -2,6 +2,11 @@
 
 All notable changes to SILC Fake Order Generator will be documented in this file.
 
+## [1.1.0] — 2026
+
+### Added
+- **Coupons** — published WooCommerce coupons are listed as selectable checkboxes on the generator page; each generated order gets one randomly chosen coupon applied before totals are calculated. Coupons that fail their own conditions (minimum/maximum spend, usage limits, product/category restrictions, expiry, etc.) are skipped silently, so order generation is never interrupted
+
 ## [1.0.0] — 2026
 
 ### Added

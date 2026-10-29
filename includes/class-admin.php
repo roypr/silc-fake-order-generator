@@ -106,6 +106,7 @@ class SILC_FOG_Admin {
 
 		$shipping_methods = $this->get_shipping_methods();
 		$payment_gateways = $this->get_payment_gateways();
+		$coupons          = $this->get_coupons();
 		$order_statuses   = $this->get_order_statuses();
 		?>
 		<div class="wrap">
@@ -200,6 +201,29 @@ class SILC_FOG_Admin {
 										<?php endforeach; ?>
 									<?php else : ?>
 										<p class="description"><?php esc_html_e( 'No active payment gateways found.', 'silc-fake-order-generator' ); ?></p>
+									<?php endif; ?>
+								</fieldset>
+							</td>
+						</tr>
+
+						<!-- Coupons -->
+						<tr>
+							<th scope="row">
+								<?php esc_html_e( 'Coupons', 'silc-fake-order-generator' ); ?>
+							</th>
+							<td>
+								<fieldset>
+									<legend class="screen-reader-text"><?php esc_html_e( 'Coupons', 'silc-fake-order-generator' ); ?></legend>
+									<?php if ( ! empty( $coupons ) ) : ?>
+										<?php foreach ( $coupons as $coupon_code => $coupon_label ) : ?>
+											<label>
+												<input type="checkbox" name="fog_coupons[]" value="<?php echo esc_attr( $coupon_code ); ?>" checked />
+												<?php echo esc_html( $coupon_label ); ?>
+											</label><br />
+										<?php endforeach; ?>
+										<p class="description"><?php esc_html_e( 'A random coupon is applied to each order. Coupons whose conditions are not met (minimum spend, usage limits, product restrictions, expiry, etc.) are skipped silently.', 'silc-fake-order-generator' ); ?></p>
+									<?php else : ?>
+										<p class="description"><?php esc_html_e( 'No coupons found. Create coupons in WooCommerce to use this feature.', 'silc-fake-order-generator' ); ?></p>
 									<?php endif; ?>
 								</fieldset>
 							</td>
@@ -332,5 +356,60 @@ class SILC_FOG_Admin {
 		}
 
 		return $gateways;
+	}
+
+	/**
+	 * Get published coupons available for random application.
+	 *
+	 * @return array<string, string> Coupon code => Label.
+	 */
+	private function get_coupons(): array {
+		if ( ! function_exists( 'WC' ) ) {
+			return array();
+		}
+
+		$coupons = array();
+
+		$coupon_ids = get_posts(
+			array(
+				'post_type'      => 'shop_coupon',
+				'post_status'    => 'publish',
+				'posts_per_page' => 200,
+				'orderby'        => 'title',
+				'order'          => 'ASC',
+				'fields'         => 'ids',
+			)
+		);
+
+		foreach ( $coupon_ids as $coupon_id ) {
+			$coupon = new WC_Coupon( $coupon_id );
+			if ( ! $coupon->get_id() ) {
+				continue;
+			}
+
+			$coupons[ $coupon->get_code() ] = $this->format_coupon_label( $coupon );
+		}
+
+		return $coupons;
+	}
+
+	/**
+	 * Build a human-readable label for a coupon, e.g. "SUMMER10 (Percentage discount: 10)".
+	 *
+	 * @param WC_Coupon $coupon Coupon object.
+	 * @return string
+	 */
+	private function format_coupon_label( WC_Coupon $coupon ): string {
+		$label = $coupon->get_code();
+
+		$type = function_exists( 'wc_get_coupon_type' )
+			? wc_get_coupon_type( $coupon->get_discount_type() )
+			: $coupon->get_discount_type();
+
+		if ( '' !== (string) $type ) {
+			$label .= ' (' . $type . ': ' . wc_format_decimal( $coupon->get_amount() ) . ')';
+		}
+
+		return $label;
 	}
 }

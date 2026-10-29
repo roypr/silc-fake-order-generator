@@ -28,7 +28,7 @@ Generated orders are pushed into the WooCommerce Analytics lookup tables (`wc_or
 2. Go to **WooCommerce → Fake Orders**
 3. Pick a **Start Date** and **End Date** for order dates
 4. Set the **Number of Orders** and items-per-order range (1–5)
-5. Choose which **Shipping Methods**, **Payment Methods**, and **Order Statuses** to randomize from
+5. Choose which **Shipping Methods**, **Payment Methods**, **Coupons**, and **Order Statuses** to randomize from
 6. Click **Generate Orders** and watch the progress bar
 
 **Prerequisites:** the store needs at least one customer and at least one published product (simple or variable) — the generator will tell you if either is missing.
@@ -46,6 +46,7 @@ Generated orders are pushed into the WooCommerce Analytics lookup tables (`wc_or
 | **Order statuses** | pending, processing, on-hold, completed, cancelled, refunded, failed — applied through WooCommerce's normal status-transition pipeline |
 | **Analytics sync** | `date_paid`/`date_completed` backdated for paid statuses; orders synced to `wc_order_stats` via `OrdersScheduler::import` (with fallback for older versions) |
 | **Shipping & payment** | Random rates from your real shipping zones and active payment gateways |
+| **Coupons** | One random coupon from your published coupons is applied per order; coupons that fail their conditions are skipped silently |
 | **Realistic addresses** | Billing/shipping from customer data, with believable random fallbacks (street, city, postcode) |
 | **Secure** | Nonce-verified AJAX endpoint, `manage_woocommerce` capability required |
 
@@ -66,6 +67,7 @@ Admin form (dates, count, items, methods, statuses)
 │  wc_create_order()            │  ← real WooCommerce APIs
 │  Random customer + products   │
 │  Addresses, shipping, payment │
+│  Coupons (failures skipped)   │
 └───────────────────────────────┘
         │
         ▼
@@ -111,8 +113,8 @@ find . -name '*.php' -not -path './.git/*' -print0 | xargs -0 -n1 php -l
 A GitHub Actions workflow (`.github/workflows/build-plugin.yml`) builds a distributable ZIP on every `v*` tag push:
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0 --tags
+git tag v1.1.0
+git push origin v1.1.0 --tags
 ```
 
 The workflow assembles a clean plugin folder (excluding `.git`, `.github`, docs, and build config), zips it, uploads it as a run artifact, and attaches it to a GitHub Release when triggered by a tag.

@@ -2,8 +2,8 @@
 /**
  * Plugin Name: SILC Fake Order Generator
  * Plugin URI:  https://silc.com/
- * Description: Generate fake WooCommerce orders for testing purposes. Supports batching, random customers, products, variations, shipping, and payment methods.
- * Version:     1.0.0
+ * Description: Generate fake WooCommerce orders for testing purposes. Supports batching, random customers, products, variations, shipping, payment methods, and coupons.
+ * Version:     1.1.0
  * Author:      SILC
  * Text Domain: silc-fake-order-generator
  * Domain Path: /languages
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SILC_FOG_VERSION', '1.0.0' );
+define( 'SILC_FOG_VERSION', '1.1.0' );
 define( 'SILC_FOG_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SILC_FOG_URL', plugin_dir_url( __FILE__ ) );
 
